@@ -57,7 +57,7 @@ struct Functions
 {
 	DWORD GetHealth = 0x1C1CA0;
 	//DWORD ShootEnemy = 0x2C0736;
-	DWORD PosToCell = 0x3B5F30;
+	//DWORD PosToCell = 0x3B5F30;
 	/*DWORD SendMessageToChat = 0x2CA80A;
 	DWORD msg_01 = 0x191270;
 	DWORD msg_02 = 0x191130;
