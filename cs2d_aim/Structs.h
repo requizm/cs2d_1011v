@@ -45,13 +45,19 @@ struct Offsets
 	DWORD txtSize = 0x8;
 	DWORD txtStart = 0xC;
 
+
+	DWORD readmouseX = 0x496D14;
+	DWORD readmouseY = 0x496D18;
+	DWORD cameraPosX = 0x497DA4;
+	DWORD cameraPosY = 0x497DA8;
+
 } offsets;
 
 struct Functions
 {
 	DWORD GetHealth = 0x1C1CA0;
 	//DWORD ShootEnemy = 0x2C0736;
-	//DWORD PosToCell = 0x3B5F30;
+	DWORD PosToCell = 0x3B5F30;
 	/*DWORD SendMessageToChat = 0x2CA80A;
 	DWORD msg_01 = 0x191270;
 	DWORD msg_02 = 0x191130;
@@ -70,7 +76,6 @@ struct Entity
 	float yPos = 0.0f;
 	int team = 0;
 	int isLive = 0;
-	int oldIsLive;
 	int hp;
 
 } Player;
@@ -81,5 +86,11 @@ struct screen
 	DWORD mouseY = 0x0;
 	DWORD baseAdress = 0x0;
 } Screen;
+
+struct sVector2
+{
+	float x = 0;
+	float y = 0;
+};
 
 #endif // !STRUCTS_H

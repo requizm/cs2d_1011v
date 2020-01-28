@@ -11,6 +11,7 @@ DWORD moduleBase;
 DWORD entityList;
 std::vector<Entity> enemies;
 int screenWidth, screenHeight;
+typedef sVector2 Vector2;
 bool aim = false;
 bool esp = true;
 bool flash = false;
@@ -26,6 +27,8 @@ int ChangeFlash();
 void Render();
 std::string BoolToString(bool a);
 void WriteStatus();
+Vector2 ScreenToWorld(Vector2 pos, Vector2 view);
+Vector2 WorldToScreen(Vector2 pos, Vector2 view);
 //extern "C" void OnStartMatch();
 
 twglSwapBuffers owglSwapBuffers;
@@ -35,7 +38,7 @@ typedef int(__cdecl* fnGetHealth)(DWORD health_ptr);
 //typedef int* (__cdecl* fnReloadAmmo)(int player_id, int b, int c);  // b = 1, c = 1
 //typedef int* (__cdecl* fnMove)(DWORD player_ptr, float x, float y, int d, int collision);  // d = 1
 //typedef DWORD(__cdecl* fnGetEnemyFromID)(int id); 
-//typedef int (__cdecl* fnPosToCell)((double pos - 12.0) / 32.0); 
+//typedef int(__cdecl* fnPosToCell)(double a1); //for player: ((double pos - 12.0) / 32.0)
 
 
 //doesn't work effective
@@ -222,7 +225,16 @@ void Render()
 		}
 		Sleep(200);
 	}
-
+	/*Vector2 mouse, view;
+		mouse.x = *(float*)(moduleBase + offsets.readmouseX);
+		mouse.y = *(float*)(moduleBase + offsets.readmouseY);
+		view.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
+		view.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
+		float div = *(float*)(moduleBase + 0x4CF274);
+		Vector2 pos = ScreenToWorld(mouse, view);
+		int x = PosToCell((double)((pos.x) / div));
+		int y = PosToCell((double)((pos.y) / div));*/
+	
 
 	Player.baseAdress = *(DWORD*)(moduleBase + offsets.basePlayer);
 	int match = *(int*)(Player.baseAdress + offsets.id);
@@ -240,8 +252,6 @@ void Render()
 		entityList = *(DWORD*)((*(DWORD*)(moduleBase + offsets.entityList)) + 0x8);
 		UpdatePlayer();
 		UpdateEnemies();
-		int x = *(int*)Screen.mouseX;
-		int y = *(int*)Screen.mouseY;
 
 		int index = CalculateClosestEnemy();
 		if (index == -1)
@@ -251,8 +261,90 @@ void Render()
 		Entity target = enemies.at(index);
 		if (Player.isLive == 0 && aim)
 		{
-			*(int*)Screen.mouseX = (screenWidth / 2) + (target.xPos - Player.xPos);
-			*(int*)Screen.mouseY = (screenHeight / 2) + (target.yPos - Player.yPos);
+
+			Vector2 view, scr;
+			view.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
+			view.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
+			scr.x = screenWidth;
+			scr.y = screenHeight;
+
+			Vector2 res = ScreenToWorld(scr, view);
+
+			float xDistance = target.xPos - Player.xPos;
+			float yDistance = target.yPos - Player.yPos;
+
+			float dist = sqrtf(pow(xDistance, 2) + pow(yDistance, 2)); //magnitude
+			float maxDist = sqrtf(pow(res.x / 6, 2) + pow(res.y / 6, 2));
+
+			float d_x = xDistance / dist; //normalized
+			float d_y = yDistance / dist; //normalized
+
+			Vector2 direction;
+			direction.x = d_x;
+			direction.y = d_y;
+
+			Vector2 enemy, player;
+			enemy.x = target.xPos;
+			enemy.y = target.yPos;
+
+			Vector2 result;
+			if (dist > maxDist)
+			{
+				Vector2 ps;
+				ps.x = Player.xPos + direction.x * 150;
+				ps.y = Player.yPos + direction.y * 150;
+				Vector2 t = WorldToScreen(enemy, view);
+				Vector2 e = WorldToScreen(ps, view);
+				{
+					float k = 480 / e.y;
+					float k_1 = screenHeight / k;
+					e.y = k_1;
+
+					k = (744.0f - 105.0f) / (e.x - 105.0f);
+					k_1 = screenWidth / k;
+					e.x = k_1;
+
+					k = 480 / t.y;
+					k_1 = screenHeight / k;
+					t.y = k_1;
+
+					k = (744.0f - 105.0f) / (t.x - 105.0f);
+					k_1 = screenWidth / k;
+					t.x = k_1;
+				}
+				result.x = e.x;
+				result.y = e.y;
+			}
+			else
+			{
+				player.x = Player.xPos;
+				player.y = Player.yPos;
+				Vector2 t = WorldToScreen(enemy, view);
+				Vector2 e = WorldToScreen(player, view);
+
+				{
+					float k = 480 / e.y;
+					float k_1 = screenHeight / k;
+					e.y = k_1;
+
+					k = (744.0f - 105.0f) / (e.x - 105.0f);
+					k_1 = screenWidth / k;
+					e.x = k_1;
+
+					k = 480 / t.y;
+					k_1 = screenHeight / k;
+					t.y = k_1;
+
+					k = (744.0f - 105.0f) / (t.x - 105.0f);
+					k_1 = screenWidth / k;
+					t.x = k_1;
+				}
+				result.x = t.x;
+				result.y = t.y;
+			}
+
+			*(int*)Screen.mouseX = result.x;
+			*(int*)Screen.mouseY = result.y;
 		}
 	}
 
@@ -263,20 +355,47 @@ ata:
 		{
 			if (enemies[i].isLive != 0 || Player.isLive != 0 || enemies[i].team == Player.team)
 				continue;
-			float xDistance = enemies[i].xPos - Player.xPos;
-			float yDistance = enemies[i].yPos - Player.yPos;
 
-			float enemyX = (screenWidth / 2) + ((screenWidth / 2) * (xDistance)) / 423;
-			float enemyY = (screenHeight / 2) + ((screenHeight / 2) * (yDistance)) / 270;
+			Vector2 enemy, view, player;
+			enemy.x = enemies[i].xPos;
+			enemy.y = enemies[i].yPos;
 
-			//std::cout << "enemy[" << i << "]" << enemies[i].hp << std::endl;
+			player.x = Player.xPos;
+			player.y = Player.yPos;
+
+			view.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
+			view.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
+
+			Vector2 t = WorldToScreen(enemy, view);
+			Vector2 e = WorldToScreen(player, view);
+
+			{
+				float k = 480 / e.y;
+				float k_1 = screenHeight / k;
+				e.y = k_1;
+
+				k = (744.0f - 105.0f) / (e.x - 105.0f);
+				k_1 = screenWidth / k;
+				e.x = k_1;
+
+				k = 480 / t.y;
+				k_1 = screenHeight / k;
+				t.y = k_1;
+
+				k = (744.0f - 105.0f) / (t.x - 105.0f);
+				k_1 = screenWidth / k;
+				t.x = k_1;
+			}
+
 
 			if (enemies[i].hp > 70)
-				DrawLine(screenWidth / 2, screenHeight / 2, enemyX, enemyY, rgb::green);
+				DrawLine(e.x, e.y, t.x, t.y, rgb::green);
 			else if (enemies[i].hp > 40)
-				DrawLine(screenWidth / 2, screenHeight / 2, enemyX, enemyY, rgb::gray);
+				DrawLine(e.x, e.y, t.x, t.y, rgb::gray);
 			else if (enemies[i].hp > 0)
-				DrawLine(screenWidth / 2, screenHeight / 2, enemyX, enemyY, rgb::red);
+				DrawLine(e.x, e.y, t.x, t.y, rgb::red);
+
+
 
 		}
 	}
@@ -355,4 +474,20 @@ void WriteStatus()
 	std::cout << "[F5] aim: " << a << std::endl;
 	std::cout << "[F6] esp: " << e << std::endl;
 	std::cout << "[F7] noflash: " << n << std::endl;
+}
+
+Vector2 ScreenToWorld(Vector2 pos, Vector2 view)
+{
+	Vector2 result;
+	result.x = pos.x + view.x;
+	result.y = pos.y + view.y;
+	return result;
+}
+
+Vector2 WorldToScreen(Vector2 pos, Vector2 view)
+{
+	Vector2 result;
+	result.x = pos.x - view.x;
+	result.y = pos.y - view.y;
+	return result;
 }
