@@ -16,7 +16,7 @@
 <br/> <br/><br/> <br/>
 
 **What is  smart aimbot?**<br/>
-He checks whether there is an object (wall etc.) between me and the opponent in each frame. If it does, aimbot doesn't work. If not, it works.
+It checks whether there is an object (wall etc.) between me and the opponent in each frame. If it does, aimbot doesn't work. If not, it works.
 
 <br/> <br/><br/> <br/>
 **Notlar**<br/>
