@@ -12,7 +12,8 @@
 <b>Hardly Recommended Settings</b><br/>
 *Resolution: 1024x768, 800x600, 640x480<br/>
 *Windowed<br/>
-*4/3 Ratio: on<br/>
+*4/3 Ratio: ON<br/>
+*Graphic Driver: OpenGL<br/>
 <br/> <br/><br/> <br/>
 
 **What is  smart aimbot?**<br/>
