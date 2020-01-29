@@ -3,7 +3,7 @@
 
 
 <b>How To Use</b> <br/>
-  Aimbot ON/OFF : [F5] <br/>
+  Smart Aimbot ON/OFF : [F5] <br/>
   ESP ON/OFF :  [F6]  <br/>
   ANTI_FLASH ON/OFF : [F7] 
    <br/> <br/>
