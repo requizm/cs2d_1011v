@@ -3,9 +3,9 @@
 
 
 <b>How To Use</b> <br/>
-  Smart Aimbot ON/OFF : [F5] <br/>
-  ESP ON/OFF :  [F6]  <br/>
-  ANTI_FLASH ON/OFF : [F7] 
+  Smart Aimbot ON/OFF: [F5] <br/>
+  ESP ON/OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:  [F6]  <br/>
+  Anti Flash ON/OFF&nbsp;&nbsp;: [F7] 
    <br/> <br/>
  
 
