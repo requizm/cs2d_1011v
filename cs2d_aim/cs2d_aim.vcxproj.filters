@@ -18,12 +18,6 @@
     <ClCompile Include="Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Rect.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Geometry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="glDraw.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,12 +31,6 @@
     </ClInclude>
     <ClInclude Include="Functions.h">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Rect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Geometry.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="glDraw.h">
       <Filter>Header Files</Filter>

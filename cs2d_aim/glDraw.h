@@ -2,7 +2,6 @@
 #define GLDRAW_H
 #include <string>
 #include "glText.h"
-#include "Rect.h"
 #include "Functions.h"
 
 namespace rgb
@@ -47,73 +46,6 @@ void SetupOrtho()
 }
 
 
-void DrawFilledRect(float x, float y, float width, float height, const GLubyte color[3])
-{
-	glDisable(GL_TEXTURE_2D);
-	glColor3ub(color[0], color[1], color[2]);
-	glBegin(GL_QUADS);
-	glVertex2f(x, y);
-	glVertex2f(x + width, y);
-	glVertex2f(x + width, y + height);
-	glVertex2f(x, y + height);
-	glEnd();
-	glEnable(GL_TEXTURE_2D);
-}
-
-void drawFilledRect(MyRect r)
-{
-
-	vec2 vertices[6] = { r.tr, r.br, r.tl,   // First triangle
-		r.tl, r.br, r.bl }; // Second triangle
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_FLOAT, 0, vertices);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glDrawArrays(GL_TRIANGLES, 3, 3);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glPopMatrix();
-
-}
-
-void drawRectangle(MyRect r, float lineWidth)
-{
-	vec2 vertices[4] = { r.tl, r.tr, r.br, r.bl };
-	glLineWidth(lineWidth);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_FLOAT, 0, vertices);
-	glDrawArrays(GL_LINE_LOOP, 0, 4);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glPopMatrix();
-}
-
-void DrawOutline(float x, float y, float width, float height, float lineWidth, const GLubyte color[3])
-{
-	glDisable(GL_TEXTURE_2D);
-	glLineWidth(lineWidth);
-	glBegin(GL_LINE_STRIP);
-	glColor3ub(color[0], color[1], color[2]);
-	glVertex2f(x - 0.5f, y - 0.5f);
-	glVertex2f(x + width + 0.5f, y - 0.5f);
-	glVertex2f(x + width + 0.5f, y + height + 0.5f);
-	glVertex2f(x - 0.5f, y + height + 0.5f);
-	glVertex2f(x - 0.5f, y - 0.5f);
-	glEnd();
-	glEnable(GL_TEXTURE_2D);
-}
-
-void drawOutline(MyRect box)
-{
-	box.tl.x -= 1.0f;
-	box.tl.y -= 1.0f;
-	box.tr.x += 0.5f;
-	box.tr.y -= 1.0f;
-	box.br.x += 0.5f;
-	box.br.y += 1.0f;
-	box.bl.x -= 1.0f;
-	box.bl.y += 1.0f;
-	drawRectangle(box, 2.0f);
-}
-
 void DrawLine(float x1, float y1, float x2, float y2, const GLubyte color[3])
 {
 	glDisable(GL_TEXTURE_2D);
@@ -128,7 +60,7 @@ void DrawLine(float x1, float y1, float x2, float y2, const GLubyte color[3])
 void GL::Font::Print(float x, float y, const unsigned char color[3], const char* format, ...)
 {
 	glRasterPos2f(x, y);
-
+	
 	char text[100];
 	va_list	args;
 

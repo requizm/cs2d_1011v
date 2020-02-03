@@ -140,18 +140,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="glDraw.cpp" />
     <ClCompile Include="glText.cpp" />
-    <ClCompile Include="Rect.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Functions.h" />
-    <ClInclude Include="Geometry.h" />
     <ClInclude Include="glDraw.h" />
     <ClInclude Include="glText.h" />
-    <ClInclude Include="Rect.h" />
     <ClInclude Include="Structs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

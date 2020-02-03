@@ -11,11 +11,12 @@ DWORD moduleBase;
 DWORD entityList;
 std::vector<Entity> enemies;
 int screenWidth, screenHeight;
-typedef sVector2 Vector2;
+typedef fVector2 Vector2f;
 typedef iVector2 Vector2i;
 bool aim = false;
 bool esp = true;
 bool flash = false;
+bool scope = false;
 
 
 //void SendMessageToChat(std::string msg);
@@ -26,12 +27,13 @@ void UpdateEntity(Entity* entity);
 int CalculateClosestEnemy();
 int SmartCalculateClosestEnemy();
 int ChangeFlash();
+int ChangeScope();
 void Render();
 std::string BoolToString(bool a);
 void WriteStatus();
-Vector2 ScreenToWorld(Vector2 pos, Vector2 view);
-Vector2i ScreenToWorld(Vector2i pos, Vector2 view);
-Vector2 WorldToScreen(Vector2 pos, Vector2 view);
+Vector2f ScreenToWorld(Vector2f pos);
+Vector2i ScreenToWorld(Vector2i pos);
+Vector2f WorldToScreen(Vector2f pos);
 //extern "C" void OnStartMatch();
 
 twglSwapBuffers owglSwapBuffers;
@@ -41,8 +43,8 @@ typedef int(__cdecl* fnGetHealth)(DWORD health_ptr);
 //typedef int* (__cdecl* fnReloadAmmo)(int player_id, int b, int c);  // b = 1, c = 1
 //typedef int* (__cdecl* fnMove)(DWORD player_ptr, float x, float y, int d, int collision);  // d = 1
 //typedef DWORD(__cdecl* fnGetEnemyFromID)(int id); 
-typedef int(__cdecl* fnPosToCell)(double a1); //for player: ((double pos - 12.0) / 32.0)
-
+typedef int(__cdecl* fnPosToCell)(double a1); //for player: ((double pos - 12.0) / tilePixelSize)
+											  //for random pos: ((double pos) / tilePixelSize)
 
 //doesn't work effective
 /*typedef int* (__cdecl* fnSendMessage)(int a1_1, int chat_status_1, DWORD text_pointer, int a4, int a5_0); // a1 = 1, chat_status = 1, a4 = 1, a5 = 0
@@ -104,10 +106,18 @@ void UpdateEntity(Entity* entity)
 	entity->isLive = *(int*)(entity->baseAdress + offsets.isLive);
 	if (entity->isLive == 0) // 0 = live
 	{
-		entity->xPos = *(float*)(entity->baseAdress + offsets.xpos);
-		entity->yPos = *(float*)(entity->baseAdress + offsets.ypos);
-		entity->hp = GetHealth(*(DWORD*)(entity->baseAdress + offsets.healthptr));
-		entity->rotation = *(float*)(entity->baseAdress + offsets.xrot);
+		entity->pos.x = *(float*)(entity->baseAdress + offsets.xPos);
+		entity->pos.y = *(float*)(entity->baseAdress + offsets.yPos);
+		entity->hp = GetHealth(*(DWORD*)(entity->baseAdress + offsets.healthPtr));
+		//entity->rotation = *(float*)(entity->baseAdress + offsets.xrot);
+		entity->bomb = *(int*)(entity->baseAdress + offsets.ownerBomb);
+		if (entity->baseAdress == *(DWORD*)(moduleBase + offsets.basePlayer))
+		{
+			entity->weaponID = *(int*)(*(DWORD*)(entity->baseAdress + offsets.weaponPtr) + offsets.weaponId);
+			entity->weaponMode = *(int*)(*(DWORD*)(entity->baseAdress + offsets.weaponPtr) + offsets.weaponMode);
+		}
+			
+		
 	}
 }
 
@@ -149,9 +159,9 @@ int CalculateClosestEnemy()
 		{
 			if (Player.isLive == 0 && enemies[i].isLive == 0)
 			{
-				float xDistance = abs(enemies[i].xPos - Player.xPos);
-				float yDistance = abs(enemies[i].yPos - Player.yPos);
-				float len = sqrtf(pow(xDistance, 2) + pow(yDistance, 2));
+				Vector2f dist = enemies[i].pos - Player.pos;
+				if (dist.x < 0) dist.x *= -1; if (dist.y < 0) dist.y *= -1; //abs
+				float len = dist.Magnitude();
 				if (i == 0)
 				{
 					maxLen = len;
@@ -185,45 +195,29 @@ int SmartCalculateClosestEnemy()
 		{
 			if (enemies[i].isLive == 0)
 			{
-				float xDistance = abs(enemies[i].xPos - Player.xPos);
-				float yDistance = abs(enemies[i].yPos - Player.yPos);
-				float xDistance_n = enemies[i].xPos - Player.xPos;
-				float yDistance_n = enemies[i].yPos - Player.yPos;
-				float len = sqrtf(pow(xDistance, 2) + pow(yDistance, 2));
+				Vector2f dist = enemies[i].pos - Player.pos;
+				if (dist.x < 0) dist.x *= -1; if (dist.y < 0) dist.y *= -1; //abs
+				float len = dist.Magnitude();
+				Vector2f dist_n = enemies[i].pos - Player.pos;
 
-
-				float d_x = xDistance_n / len; //normalized
-				float d_y = yDistance_n / len; //normalized
 				//double d_x = sin((double)Player.rotation * 0.0174532925199433);
 				//double d_y = -cos((double)Player.rotation * 0.0174532925199433);
 
-				Vector2 direction;
-				direction.x = d_x;
-				direction.y = d_y;
-				//std::cout << direction.x << std::endl;
-				//std::cout << direction.y << std::endl;
-
-				Vector2i temp_pos;
-				temp_pos.x = (int)Player.xPos;
-				temp_pos.y = (int)Player.yPos;
-				//int x = PosToCell((double)((temp_pos.x) / 32.0f));
-				//int y = PosToCell((double)((temp_pos.y) / 32.0f));
+				Vector2f direction = Vector2f(dist_n.x / len, dist_n.y / len);
+				direction = direction * 20;
+				Vector2i temp_pos = Vector2i((int)Player.pos.x, (int)Player.pos.y);
 				bool wallFound = false;
 				if (direction.x > 0)
 				{
 					if (direction.y > 0)
 					{
-						while (temp_pos.x <= enemies[i].xPos || temp_pos.y <= enemies[i].yPos)
+						while (temp_pos.x <= enemies[i].pos.x || temp_pos.y <= enemies[i].pos.y)
 						{
 							//std::cout << "dusmanin sol ustundeyim" << std::endl;
-							temp_pos.x += direction.x * 20;
-							temp_pos.y += direction.y * 20;
+							temp_pos = temp_pos + direction;
 							//std::cout << temp_pos.x << std::endl;
 							//std::cout << temp_pos.y << std::endl;
-							Vector2 view;
-							view.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
-							view.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
-							float div = *(float*)(moduleBase + 0x4CF274);
+							float div = *(float*)(moduleBase + offsets.tilePixelSize);
 							int x = PosToCell((double)((temp_pos.x) / div));
 							int y = PosToCell((double)((temp_pos.y) / div));
 							//std::cout << x << std::endl;
@@ -240,17 +234,13 @@ int SmartCalculateClosestEnemy()
 					}
 					else
 					{
-						while (temp_pos.x < enemies[i].xPos || temp_pos.y > enemies[i].yPos)
+						while (temp_pos.x < enemies[i].pos.x || temp_pos.y > enemies[i].pos.y)
 						{
 							//std::cout << "dusmanin sol altindayim" << std::endl;
-							temp_pos.x += direction.x * 20;
-							temp_pos.y += direction.y * 20;
+							temp_pos = temp_pos + direction;
 							//std::cout << temp_pos.x << std::endl;
 							//std::cout << temp_pos.y << std::endl;
-							Vector2 view;
-							view.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
-							view.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
-							float div = *(float*)(moduleBase + 0x4CF274);
+							float div = *(float*)(moduleBase + offsets.tilePixelSize);
 							int x = PosToCell((double)((temp_pos.x) / div));
 							int y = PosToCell((double)((temp_pos.y) / div));
 							//std::cout << x << std::endl;
@@ -271,17 +261,13 @@ int SmartCalculateClosestEnemy()
 				{
 					if (direction.y > 0)
 					{
-						while (temp_pos.x >= enemies[i].xPos || temp_pos.y <= enemies[i].yPos)
+						while (temp_pos.x >= enemies[i].pos.x || temp_pos.y <= enemies[i].pos.y)
 						{
 							//std::cout << "dusmanin sag ustundeyim" << std::endl;
-							temp_pos.x += direction.x * 20;
-							temp_pos.y += direction.y * 20;
+							temp_pos = temp_pos + direction;
 							//std::cout << temp_pos.x << std::endl;
 							//std::cout << temp_pos.y << std::endl;
-							Vector2 view;
-							view.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
-							view.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
-							float div = *(float*)(moduleBase + 0x4CF274);
+							float div = *(float*)(moduleBase + offsets.tilePixelSize);
 							int x = PosToCell((double)((temp_pos.x) / div));
 							int y = PosToCell((double)((temp_pos.y) / div));
 							//std::cout << x << std::endl;
@@ -298,17 +284,13 @@ int SmartCalculateClosestEnemy()
 					}
 					else
 					{
-						while (temp_pos.x > enemies[i].xPos || temp_pos.y > enemies[i].yPos)
+						while (temp_pos.x > enemies[i].pos.x || temp_pos.y > enemies[i].pos.y)
 						{
 							//std::cout << "dusmanin sag altindayim" << std::endl;
-							temp_pos.x += direction.x * 20;
-							temp_pos.y += direction.y * 20;
+							temp_pos = temp_pos + direction;
 							//std::cout << temp_pos.x << std::endl;
 							//std::cout << temp_pos.y << std::endl;
-							Vector2 view;
-							view.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
-							view.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
-							float div = *(float*)(moduleBase + 0x4CF274);
+							float div = *(float*)(moduleBase + offsets.tilePixelSize);
 							int x = PosToCell((double)((temp_pos.x) / div));
 							int y = PosToCell((double)((temp_pos.y) / div));
 							//std::cout << x << std::endl;
@@ -375,11 +357,52 @@ int ChangeFlash()
 	return 1;
 }
 
+int ChangeScope()
+{
+	DWORD address = moduleBase + offsets.scope_01;
+	DWORD address_2 = moduleBase + offsets.scope_02;
+	BYTE value = *(BYTE*)(address);
+	BYTE value_2 = *(BYTE*)(address_2);
+
+	if ((int)value == 0x84 && (int)value_2 == 0x8E && !scope) //je - jne
+	{
+		value = 0x85;
+		value_2 = 0x8F;
+	}
+	else if ((int)value == 0x85 && (int)value_2 == 0x8F && scope) //je - jne
+	{
+		value = 0x84;
+		value_2 = 0x8E;
+	}
+	else
+	{
+		std::cout << "error on scope jump" << std::endl;
+		return 0;
+	}
+
+	DWORD OldProtection = NULL;
+	VirtualProtect(reinterpret_cast<void*>(address), 1, PAGE_EXECUTE_READWRITE, &OldProtection);
+	*reinterpret_cast<PBYTE>(address) = value;
+	VirtualProtect(reinterpret_cast<void*>(address), 1, OldProtection, &OldProtection);
+
+	OldProtection = NULL;
+	VirtualProtect(reinterpret_cast<void*>(address_2), 1, PAGE_EXECUTE_READWRITE, &OldProtection);
+	*reinterpret_cast<PBYTE>(address_2) = value_2;
+	VirtualProtect(reinterpret_cast<void*>(address_2), 1, OldProtection, &OldProtection);
+
+	return 1;
+}
+
 void Render()
 {
 	HDC currentHDC = wglGetCurrentDC();
 
 	SetupOrtho();
+
+	if (!font.bBuilt || currentHDC != font.hdc)
+	{
+		font.Build(16);
+	}
 
 	if (GetAsyncKeyState(VK_F5))
 	{
@@ -402,16 +425,14 @@ void Render()
 		}
 		Sleep(200);
 	}
-	/*Vector2 mouse, view;
-		mouse.x = *(float*)(moduleBase + offsets.readmouseX);
-		mouse.y = *(float*)(moduleBase + offsets.readmouseY);
-		view.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
-		view.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
-		float div = *(float*)(moduleBase + 0x4CF274);
-		Vector2 pos = ScreenToWorld(mouse, view);
-		int x = PosToCell((double)((pos.x) / div));
-		int y = PosToCell((double)((pos.y) / div));*/
-
+	if (GetAsyncKeyState(VK_F8))
+	{
+		if (ChangeScope() == 1) {
+			scope = !scope;
+			WriteStatus();
+		}
+		Sleep(200);
+	}
 
 	Player.baseAdress = *(DWORD*)(moduleBase + offsets.basePlayer);
 	int match = *(int*)(Player.baseAdress + offsets.id);
@@ -436,50 +457,29 @@ void Render()
 			Entity target = enemies.at(index);
 			if (Player.isLive == 0 && aim && target.isLive == 0)
 			{
-				Vector2 view, scr;
-				view.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
-				view.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
-				scr.x = screenWidth;
-				scr.y = screenHeight;
+				Vector2f scr = Vector2f(screenWidth, screenHeight);
 
-				Vector2 res = ScreenToWorld(scr, view);
+				Vector2f res = ScreenToWorld(scr);
+				res.x /= 6; res.y /= 6;
 
-				float xDistance = target.xPos - Player.xPos;
-				float yDistance = target.yPos - Player.yPos;
+				Vector2f dist_v = target.pos - Player.pos;
 
-				float dist = sqrtf(pow(xDistance, 2) + pow(yDistance, 2)); //magnitude
-				float maxDist = sqrtf(pow(res.x / 6, 2) + pow(res.y / 6, 2));
+				float dist = dist_v.Magnitude();
+				float maxDist = res.Magnitude();
 
-				float d_x = xDistance / dist; //normalized
-				float d_y = yDistance / dist; //normalized
+				Vector2f direction = dist_v.Normalize();
 
-				Vector2 direction;
-				direction.x = d_x;
-				direction.y = d_y;
-
-				Vector2 enemy, player;
-				enemy.x = target.xPos;
-				enemy.y = target.yPos;
-
-				Vector2 result;
+				Vector2f result;
 				if (dist > maxDist)
 				{
-					Vector2 ps;
-					ps.x = Player.xPos + direction.x * 150;
-					ps.y = Player.yPos + direction.y * 150;
-					Vector2 t = WorldToScreen(enemy, view);
-					Vector2 e = WorldToScreen(ps, view);
-					result.x = e.x;
-					result.y = e.y;
+					Vector2f ps = Vector2f(Player.pos.x + direction.x * 150, Player.pos.y + direction.y * 150);
+					Vector2f e = WorldToScreen(ps);
+					result = e;
 				}
 				else
 				{
-					player.x = Player.xPos;
-					player.y = Player.yPos;
-					Vector2 t = WorldToScreen(enemy, view);
-					Vector2 e = WorldToScreen(player, view);
-					result.x = t.x;
-					result.y = t.y;
+					Vector2f t = WorldToScreen(target.pos);
+					result = t;
 				}
 
 				*(int*)Screen.mouseX = result.x;
@@ -488,35 +488,65 @@ void Render()
 		}
 	}
 
-	if (enemies.size() > 0 && Player.isLive == 0 && match != 0 && esp)
+	if (Player.isLive == 0 && match != 0)
 	{
-		for (std::vector<int>::size_type i = 0; i != enemies.size(); i++)
+		if (esp && enemies.size() > 0)
 		{
-			if (enemies[i].isLive != 0 || Player.isLive != 0 || enemies[i].team == Player.team)
-				continue;
+			for (std::vector<int>::size_type i = 0; i != enemies.size(); i++)
+			{
+				if (enemies[i].isLive != 0 || Player.isLive != 0 || enemies[i].team == Player.team)
+					continue;
 
-			Vector2 enemy, view, player;
-			enemy.x = enemies[i].xPos;
-			enemy.y = enemies[i].yPos;
+				Vector2f t = WorldToScreen(enemies[i].pos);
+				Vector2f e = WorldToScreen(Player.pos);
 
-			player.x = Player.xPos;
-			player.y = Player.yPos;
+				if (enemies[i].hp > 70)
+					DrawLine(e.x, e.y, t.x, t.y, rgb::green);
+				else if (enemies[i].hp > 40)
+					DrawLine(e.x, e.y, t.x, t.y, rgb::gray);
+				else if (enemies[i].hp > 0)
+					DrawLine(e.x, e.y, t.x, t.y, rgb::red);
 
-			view.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
-			view.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
+				//write health
+				Vector2f dist_v = enemies[i].pos - Player.pos;
+				Vector2f direction = dist_v.Normalize();
+				Vector2f ps = Vector2f(Player.pos.x + direction.x * 100, Player.pos.y + direction.y * 100);
+				Vector2f k = WorldToScreen(ps);
+				renderText(std::to_string(enemies[i].hp), k.x, k.y);
+				if (Player.team == 2 && enemies[i].bomb == 1)
+				{
+					ps = Vector2f(Player.pos.x + direction.x * 150, Player.pos.y + direction.y * 150);
+					k = WorldToScreen(ps);
+					renderText("BOMB!", k.x, k.y);
+				}
 
-			Vector2 t = WorldToScreen(enemy, view);
-			Vector2 e = WorldToScreen(player, view);
-			
-
-			if (enemies[i].hp > 70)
-				DrawLine(e.x, e.y, t.x, t.y, rgb::green);
-			else if (enemies[i].hp > 40)
-				DrawLine(e.x, e.y, t.x, t.y, rgb::gray);
-			else if (enemies[i].hp > 0)
-				DrawLine(e.x, e.y, t.x, t.y, rgb::red);
+			}
+		}
+		if (scope)
+		{
+			if (Player.weaponID == 34 || Player.weaponID == 35 || Player.weaponID == 36 || Player.weaponID == 37 || Player.weaponID == 31 || Player.weaponID == 33)
+			{
+				Vector2f clonePlayer = Player.pos;
+				clonePlayer.y += 100;
+				Vector2f e = WorldToScreen(clonePlayer);
+				switch (Player.weaponMode)
+				{
+				case 0:
+					renderText("Scope Vision: OFF", e.x, e.y);
+					break;
+				case 1:
+					renderText("Scope Vision: ZOOM-1", e.x, e.y);
+					break;
+				case 2:
+					renderText("Scope Vision: ZOOM-2", e.x, e.y);
+					break;
+				default: break;
+				}
+			}
 		}
 	}
+
+
 
 }
 
@@ -588,33 +618,36 @@ void WriteStatus()
 	std::string a = BoolToString(aim);
 	std::string e = BoolToString(esp);
 	std::string n = BoolToString(flash);
+	std::string s = BoolToString(scope);
 
-	std::cout << "[F5] smart aim: " << a << std::endl;
-	std::cout << "[F6] esp      : " << e << std::endl;
-	std::cout << "[F7] no flash : " << n << std::endl;
+	std::cout << "[F5] Smart Aim : " << a << std::endl;
+	std::cout << "[F6] Esp       : " << e << std::endl;
+	std::cout << "[F7] Anti Flash: " << n << std::endl;
+	std::cout << "[F8] No Scope  : " << s << std::endl;
 }
 
-Vector2 ScreenToWorld(Vector2 pos, Vector2 view)
+Vector2f ScreenToWorld(Vector2f pos)
 {
-	Vector2 result;
-	result.x = pos.x + view.x;
-	result.y = pos.y + view.y;
-	return result;
+	Vector2f v, result;
+	v.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
+	v.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
+	return (pos + v);
 }
 
-Vector2i ScreenToWorld(Vector2i pos, Vector2 view)
+Vector2i ScreenToWorld(Vector2i pos)
 {
-	Vector2i result;
-	result.x = pos.x + view.x;
-	result.y = pos.y + view.y;
-	return result;
+	Vector2f v; Vector2i result;
+	v.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
+	v.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
+	return (pos + v);
 }
 
-Vector2 WorldToScreen(Vector2 pos, Vector2 view)
+Vector2f WorldToScreen(Vector2f pos)
 {
-	Vector2 result;
-	result.x = pos.x - view.x;
-	result.y = pos.y - view.y;
+	Vector2f v;
+	v.x = (float)(*(int*)(moduleBase + offsets.cameraPosX));
+	v.y = (float)(*(int*)(moduleBase + offsets.cameraPosY));
+	Vector2f result = pos - v;
 
 	{
 		float k = 480 / result.y;

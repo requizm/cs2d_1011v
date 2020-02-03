@@ -12,26 +12,3 @@ void GL::Font::Build(int height)
 
 	bBuilt = true;
 }
-
-vec GL::Font::centerText(float x, float y, float width, float height, float textWidth, float textHeight)
-{
-	vec text;
-	text.x = x + (width - textWidth) / 2;
-	text.y = y + textHeight;
-	return text;
-}
-
-float GL::Font::centerText(float x, float width, float textWidth)
-{
-	if (width > textWidth)
-	{
-		float difference = width - textWidth;
-		return (x + (difference / 2));
-	}
-
-	else
-	{
-		float difference = textWidth - width;
-		return (x - (difference / 2));
-	}
-}
