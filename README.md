@@ -3,7 +3,7 @@
 
 
 <b>How To Use</b> <br/>
- <p><strong>How To Use</strong><br />Smart AimBot&nbsp;ON/OFF&nbsp; &nbsp; &nbsp;:&nbsp;&nbsp;&nbsp; [F5]<br />Esp ON/OFF&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; :&nbsp;&nbsp;&nbsp; [F6]<br />Anti&nbsp;Flash&nbsp;ON/OFF&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;:&nbsp;&nbsp;&nbsp; [F7]<br />No&nbsp;Scope&nbsp;Vision&nbsp;ON/OFF&nbsp; :&nbsp; [F8]</p>
+ <p><strong>How To Use</strong><br />Smart AimBot&nbsp;ON/OFF&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;:&nbsp; [F5]<br />Esp ON/OFF&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp; :&nbsp; [F6]<br />Anti&nbsp;Flash&nbsp;ON/OFF&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;: [F7]<br />No&nbsp;Scope&nbsp;Vision&nbsp;ON/OFF&nbsp; :&nbsp; [F8]</p>
    <br/> <br/>
    
  
