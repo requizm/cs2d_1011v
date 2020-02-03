@@ -4,9 +4,11 @@
 
 <b>How To Use</b> <br/>
   Smart&nbsp;Aimbot&nbsp;ON/OFF:&nbsp;[F5]<br/>
-  ESP&nbsp;ON/OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;[F6]  <br/>
-  Anti&nbsp;Flash&nbsp;ON/OFF&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;[F7] 
+  ESP&nbsp;ON/OFF:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;[F6]  <br/>
+  Anti&nbsp;Flash&nbsp;ON/OFF:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;[F7] <br/>
+  No&nbsp;Scope&nbsp;Vision&nbsp;ON/OFF:[F8]
    <br/> <br/>
+   
  
 
 <b>Hardly Recommended Settings</b><br/>
