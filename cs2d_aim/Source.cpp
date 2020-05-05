@@ -34,7 +34,6 @@ void WriteStatus();
 Vector2f ScreenToWorld(Vector2f pos);
 Vector2i ScreenToWorld(Vector2i pos);
 Vector2f WorldToScreen(Vector2f pos);
-//extern "C" void OnStartMatch();
 
 twglSwapBuffers owglSwapBuffers;
 
@@ -46,18 +45,19 @@ typedef int(__cdecl* fnGetHealth)(DWORD health_ptr);
 typedef int(__cdecl* fnPosToCell)(double a1); //for player: ((double pos - 12.0) / tilePixelSize)
 											  //for random pos: ((double pos) / tilePixelSize)
 
-//doesn't work effective
-/*typedef int* (__cdecl* fnSendMessage)(int a1_1, int chat_status_1, DWORD text_pointer, int a4, int a5_0); // a1 = 1, chat_status = 1, a4 = 1, a5 = 0
+
+/**
+typedef int* (__cdecl* fnSendMessage)(int a1_1, int chat_status_1, DWORD text_pointer, int a4, int a5_0); // a1 = 1, chat_status = 1, a4 = 1, a5 = 0
 typedef DWORD(__cdecl* fnMessage_01)(DWORD txtptr, DWORD chatptr_size, DWORD textptr_size); //sub_591270
 typedef DWORD(__cdecl* fnMessage_02)(__int16 asci_no); //sub_591130
-typedef DWORD(__cdecl* fnMessage_03)(DWORD a1, DWORD a2); //sub_591200*/
+typedef DWORD(__cdecl* fnMessage_03)(DWORD a1, DWORD a2); //sub_591200
+**/
 
 //typedef int (__cdecl* fnEnemyShot)(int target_id, int source_id, int damage, int a4, int a5, int a6, int a7); a4 = 0, a5 = -1, a6 = 0, a7 = 0 
 
 
 
 
-//fnReloadAmmo ReloadAmmo;
 //fnMove Move;
 //fnGetEnemyFromID GetEnemyFromID;
 fnPosToCell PosToCell;
@@ -116,8 +116,8 @@ void UpdateEntity(Entity* entity)
 			entity->weaponID = *(int*)(*(DWORD*)(entity->baseAdress + offsets.weaponPtr) + offsets.weaponId);
 			entity->weaponMode = *(int*)(*(DWORD*)(entity->baseAdress + offsets.weaponPtr) + offsets.weaponMode);
 		}
-			
-		
+
+
 	}
 }
 
@@ -185,9 +185,6 @@ int SmartCalculateClosestEnemy()
 		DWORD mapPtr = *(DWORD*)(moduleBase + offsets.mapObj);
 		int tileYCount = *(int*)(mapPtr + offsets.mapYCount);
 		DWORD firstTileAddress = mapPtr + offsets.first_TileType;
-		//std::cout << "map_ptr: "<< std::hex << mapPtr << std::endl;
-		//std::cout << "y count: " << std::hex << tileYCount << std::endl;
-		//std::cout << "first tile address: " << std::hex << firstTileAddress << std::endl;
 		float maxLen = 340282346638528859811704183484516925440.0000000000000000f; //max distance 
 		int targetIndex = 0;
 		int sz = enemies.size();
@@ -215,16 +212,10 @@ int SmartCalculateClosestEnemy()
 						{
 							//std::cout << "dusmanin sol ustundeyim" << std::endl;
 							temp_pos = temp_pos + direction;
-							//std::cout << temp_pos.x << std::endl;
-							//std::cout << temp_pos.y << std::endl;
 							float div = *(float*)(moduleBase + offsets.tilePixelSize);
 							int x = PosToCell((double)((temp_pos.x) / div));
 							int y = PosToCell((double)((temp_pos.y) / div));
-							//std::cout << x << std::endl;
-							//std::cout << y << std::endl;
 							int type = *(int*)(firstTileAddress + 4 * ((x * tileYCount) + y));
-							//std::cout << std::hex << type << std::endl;
-							//std::cout << std::hex << (firstTileAddress + 4 * ((x * tileYCount) + y)) << std::endl;
 							if (type == 1 || type == 3)
 							{
 								wallFound = true;
@@ -238,16 +229,10 @@ int SmartCalculateClosestEnemy()
 						{
 							//std::cout << "dusmanin sol altindayim" << std::endl;
 							temp_pos = temp_pos + direction;
-							//std::cout << temp_pos.x << std::endl;
-							//std::cout << temp_pos.y << std::endl;
 							float div = *(float*)(moduleBase + offsets.tilePixelSize);
 							int x = PosToCell((double)((temp_pos.x) / div));
 							int y = PosToCell((double)((temp_pos.y) / div));
-							//std::cout << x << std::endl;
-							//std::cout << y << std::endl;
 							int type = *(int*)(firstTileAddress + 4 * ((x * tileYCount) + y));
-							//std::cout << std::hex << type << std::endl;
-							//std::cout << std::hex << (firstTileAddress + 4 * ((x * tileYCount) + y)) << std::endl;
 							if (type == 1 || type == 3)
 							{
 								wallFound = true;
@@ -265,16 +250,10 @@ int SmartCalculateClosestEnemy()
 						{
 							//std::cout << "dusmanin sag ustundeyim" << std::endl;
 							temp_pos = temp_pos + direction;
-							//std::cout << temp_pos.x << std::endl;
-							//std::cout << temp_pos.y << std::endl;
 							float div = *(float*)(moduleBase + offsets.tilePixelSize);
 							int x = PosToCell((double)((temp_pos.x) / div));
 							int y = PosToCell((double)((temp_pos.y) / div));
-							//std::cout << x << std::endl;
-							//std::cout << y << std::endl;
 							int type = *(int*)(firstTileAddress + 4 * ((x * tileYCount) + y));
-							//std::cout << std::hex << type << std::endl;
-							//std::cout << std::hex << (firstTileAddress + 4 * ((x * tileYCount) + y)) << std::endl;
 							if (type == 1 || type == 3)
 							{
 								wallFound = true;
@@ -288,16 +267,10 @@ int SmartCalculateClosestEnemy()
 						{
 							//std::cout << "dusmanin sag altindayim" << std::endl;
 							temp_pos = temp_pos + direction;
-							//std::cout << temp_pos.x << std::endl;
-							//std::cout << temp_pos.y << std::endl;
 							float div = *(float*)(moduleBase + offsets.tilePixelSize);
 							int x = PosToCell((double)((temp_pos.x) / div));
 							int y = PosToCell((double)((temp_pos.y) / div));
-							//std::cout << x << std::endl;
-							//std::cout << y << std::endl;
 							int type = *(int*)(firstTileAddress + 4 * ((x * tileYCount) + y));
-							//std::cout << std::hex << type << std::endl;
-							//std::cout << std::hex << (firstTileAddress + 4 * ((x * tileYCount) + y)) << std::endl;
 							if (type == 1 || type == 3)
 							{
 								wallFound = true;
@@ -325,22 +298,20 @@ int SmartCalculateClosestEnemy()
 
 int ChangeFlash()
 {
-	DWORD address = moduleBase + offsets.flash_01;
-	DWORD address_2 = moduleBase + offsets.flash_02;
+	DWORD address = moduleBase + offsets.flash;
 	BYTE value = *(BYTE*)(address);
-	BYTE value_2 = *(BYTE*)(address_2);
 
-	if ((int)value == 0x84 && (int)value_2 == 0x84 && !flash) //je - jne
+	if ((int)value == 0x01 && !flash)
 	{
-		value = 0x85;
+		value = 0x00;
 	}
-	else if ((int)value == 0x85 && (int)value_2 == 0x85 && flash) //je - jne
+	else if ((int)value == 0x00 && flash)
 	{
-		value = 0x84;
+		value = 0x01;
 	}
 	else
 	{
-		std::cout << "error on flash jump" << std::endl;
+		std::cout << "error on flash func" << std::endl;
 		return 0;
 	}
 
@@ -349,10 +320,6 @@ int ChangeFlash()
 	*reinterpret_cast<PBYTE>(address) = value;
 	VirtualProtect(reinterpret_cast<void*>(address), 1, OldProtection, &OldProtection);
 
-	OldProtection = NULL;
-	VirtualProtect(reinterpret_cast<void*>(address_2), 1, PAGE_EXECUTE_READWRITE, &OldProtection);
-	*reinterpret_cast<PBYTE>(address_2) = value;
-	VirtualProtect(reinterpret_cast<void*>(address_2), 1, OldProtection, &OldProtection);
 
 	return 1;
 }
@@ -364,19 +331,19 @@ int ChangeScope()
 	BYTE value = *(BYTE*)(address);
 	BYTE value_2 = *(BYTE*)(address_2);
 
-	if ((int)value == 0x84 && (int)value_2 == 0x8E && !scope) //je - jne
+	if ((int)value == 0x01 && (int)value_2 == 0x02 && !scope)
 	{
-		value = 0x85;
-		value_2 = 0x8F;
+		value = 0x05;
+		value_2 = 0x05;
 	}
-	else if ((int)value == 0x85 && (int)value_2 == 0x8F && scope) //je - jne
+	else if ((int)value == 0x05 && (int)value_2 == 0x05 && scope)
 	{
-		value = 0x84;
-		value_2 = 0x8E;
+		value = 0x01;
+		value_2 = 0x02;
 	}
 	else
 	{
-		std::cout << "error on scope jump" << std::endl;
+		std::cout << "error on scope func" << std::endl;
 		return 0;
 	}
 
@@ -458,7 +425,6 @@ void Render()
 			if (Player.isLive == 0 && aim && target.isLive == 0)
 			{
 				Vector2f scr = Vector2f(screenWidth, screenHeight);
-
 				Vector2f res = ScreenToWorld(scr);
 				res.x /= 6; res.y /= 6;
 
@@ -507,7 +473,6 @@ void Render()
 				else if (enemies[i].hp > 0)
 					DrawLine(e.x, e.y, t.x, t.y, rgb::red);
 
-				//write health
 				Vector2f dist_v = enemies[i].pos - Player.pos;
 				Vector2f direction = dist_v.Normalize();
 				Vector2f ps = Vector2f(Player.pos.x + direction.x * 100, Player.pos.y + direction.y * 100);
@@ -545,63 +510,18 @@ void Render()
 			}
 		}
 	}
-
-
-
 }
 
-/*void SendMessageToChat(std::string msg)
-{
-	DWORD chatBase = moduleBase + offsets.chatPtr;
-	*(int*)(chatBase + offsets.chatStatus) = 1;
-
-	DWORD sendTo = moduleBase + offsets.inputLetterPtr;
-	DWORD chatpointer, txtpointer;
-
-
-	int sz = msg.size();
-	std::string s("ab");
-	for (char& c : s)
-	{
-		*(int*)sendTo = c;
-		txtpointer = *(DWORD*)(chatBase + offsets.txtPointer);
-		msg_01(txtpointer, *(DWORD*)(chatBase + offsets.chatSize), *(DWORD*)(txtpointer + offsets.txtSize));
-		DWORD a = msg_02(c);
-		DWORD b = msg_01(txtpointer, 0x0, *(DWORD*)(chatBase + offsets.chatSize));
-		DWORD c = msg_03(b, a);
-		txtpointer = msg_03(c, moduleBase + 0x3C4C80);
-	}
-
-	*(int*)(txtpointer + offsets.txtSize) = sz;
-
-	int i = 0;
-	int d = offsets.txtStart;
-	for (char& c : msg)
-	{
-		*(BYTE*)(txtpointer + d++) = c;
-		if (i + 1 != sz)
-			*(BYTE*)(txtpointer + d++) = 0x00;
-		i++;
-	}
-
-	SendMessageChat(1, 1, txtpointer, 1, 0);
-	*(int*)chatSt = 0;
-}*/
 
 void Initiate()
 {
 	moduleBase = getModuleBase("cs2d.exe");
 
-	//ReloadAmmo = (fnReloadAmmo)(moduleBase + functions.ReloadAmmo);
 	//Move = (fnMove)(moduleBase + functions.Move);
-	//GetEnemyFromID = (fnGetEnemyFromID)(moduleBase + functions.GetEnemyFromID); //
 	PosToCell = (fnPosToCell)(moduleBase + functions.PosToCell);
-	/*SendMessageChat = (fnSendMessage)(moduleBase + functions.SendMessageToChat);
-	msg_01 = (fnMessage_01)(moduleBase + functions.msg_01);
-	msg_02 = (fnMessage_02)(moduleBase + functions.msg_02);
-	msg_03 = (fnMessage_03)(moduleBase + functions.msg_03);*/
 	//EnemyShot = (fnEnemyShot)(moduleBase + functions.ShootEnemy);
 	GetHealth = (fnGetHealth)(moduleBase + functions.GetHealth);
+
 
 	WriteStatus();
 }
