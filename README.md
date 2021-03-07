@@ -25,5 +25,5 @@ Bu sefer, 1008v sürümündeki projeme nazaran daha stabil bir çalışma yapmı
 **Notes**<br/>
 This time, I have done a more stable work than my project in the 1008v. While working on my previous project, I couldn't find the entity list. So I was getting a enemy base address with some hooks, so sometimes the game crashed. I had never found the address of health. Probably encrypted.<br/>
 Currently, there is no hook other than SwapBuffer. So the probability of crash is very low. I found some functions like reload_ammo, move, damage, etc., what will they do? It is client based, of course, it will not work on servers except a few of them, but I have enjoyed it. They encrypted their health value very well. Finally i found it. 
-
+rastgele bir şeyler gycm
 
