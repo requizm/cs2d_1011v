@@ -1,5 +1,5 @@
 # Counter Strike 2D Hack
-[![Visits Badge](https://badges.pufler.dev/visits/requizm/cs2d_vscode)](https://badges.pufler.dev)
+[![Visits Badge](https://badges.pufler.dev/visits/requizm/cs2d_1011v)](https://badges.pufler.dev)
 
 
  <p><strong>How To Use</strong><br />Smart AimBot&nbsp;ON/OFF&nbsp; &nbsp; &nbsp;&nbsp;:&nbsp;[F5]<br />Esp ON/OFF&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp; :&nbsp;[F6]<br />Anti&nbsp;Flash&nbsp;ON/OFF&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;:&nbsp;[F7]<br />No&nbsp;Scope&nbsp;Vision&nbsp;ON/OFF&nbsp; :&nbsp;[F8]</p>
